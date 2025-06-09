@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KeepHappy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --bg-color: #110f1a;
+            --chat-bg: #1c1a2e;
+            --accent-magenta: #e040fb;
+            --accent-purple: #7b1fa2;
+            --text-primary: #f0f0f0;
+            --text-secondary: #a09fb1;
+            --user-msg-bg: linear-gradient(45deg, var(--accent-purple), var(--accent-magenta));
+            --bot-msg-bg: #322f4e;
+            --font-family: 'Poppins', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 500px;
+            height: 85vh;
+            max-height: 700px;
+            background-color: var(--chat-bg);
+            border-radius: 20px;
+            border: 1px solid rgba(224, 64, 251, 0.2);
+            box-shadow: 0 0 30px rgba(224, 64, 251, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .chat-header {
+            padding: 1.2rem;
+            background: rgba(0, 0, 0, 0.2);
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 500;
+            background-image: linear-gradient(45deg, var(--accent-magenta), var(--accent-purple));
+            color: white;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Custom Scrollbar */
+        .chat-messages::-webkit-scrollbar { width: 6px; }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--accent-magenta);
+            border-radius: 10px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 0.7rem 1.1rem;
+            border-radius: 18px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            background: var(--user-msg-bg);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.bot {
+            background-color: var(--bot-msg-bg);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .typing-indicator {
+            display: flex; gap: 5px; align-items: center;
+        }
+        .typing-indicator .dot {
+            width: 8px; height: 8px; background-color: var(--text-secondary);
+            border-radius: 50%; animation: typing-anim 1.4s infinite ease-in-out both;
+        }
+        .typing-indicator .dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing-anim { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); }}
+
+        .chat-input-form {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid rgba(224, 64, 251, 0.2);
+        }
+
+        #user-input {
+            flex-grow: 1;
+            border: none;
+            background-color: var(--bot-msg-bg);
+            padding: 0.8rem 1rem;
+            font-size: 1rem;
+            border-radius: 20px;
+            color: var(--text-primary);
+            outline: none;
+            margin-right: 0.5rem;
+        }
+
+        #send-btn {
+            border: none;
+            background: var(--accent-magenta);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        #send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px var(--accent-magenta);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="background-animation"></canvas>
+    
+    <div class="chat-container">
+        <header class="chat-header">Bloom</header>
+        <div class="chat-messages" id="chat-messages">
+            <!-- Messages appear here -->
+        </div>
+        <form class="chat-input-form" id="chat-form">
+            <input type="text" id="user-input" placeholder="Say something to KeepHappy..." autocomplete="off" required>
+            <button type="submit" id="send-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M3 20v-6l8-2l-8-2V4l19 8l-19 8Z"/></svg>
+            </button>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
